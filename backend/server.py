@@ -1,18 +1,21 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 import mysql.connector
 import os
 from dotenv import load_dotenv
 
-app=Flask(__name__)
+app = Flask(__name__)
+CORS(app)
 
 load_dotenv()
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
+MYSQL_DATABASE = os.getenv("MYSQL_DATABASE")
 
 db=mysql.connector.connect(
     host='localhost',
     user='root',
     password=MYSQL_PASSWORD,
-    database='mydatabase'
+    database=MYSQL_DATABASE
 )
 
 @app.route("/")

@@ -6,7 +6,7 @@ function Home() {
   return (
     <div style={{ color: "#504B38" }} className="home-container">
       <div className="left-side">
-        <h1>Welcome Username!</h1>
+        <h1>Welcome To Wardrobe Wizard!</h1>
         <p>
             PUT A DESCRIPTION OF ALL THE STUFF WE THAT WE ARE DOING IN THIS APP <br/>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
