@@ -1,0 +1,5 @@
+Color Scheme
+First: F8F3D9
+Second: EBE5C2
+Third: B9B28A
+Fourth: 504B38
