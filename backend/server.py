@@ -3,6 +3,7 @@ from flask_cors import CORS
 import mysql.connector
 import os
 from dotenv import load_dotenv
+import google_auth_oauthlib
 
 app = Flask(__name__)
 CORS(app)
@@ -69,6 +70,41 @@ def view_students():
     return jsonify(
         info_map
     ), 200
+
+@app.route("/auth-to-refresh")
+def auth_to_refresh():
+    state = Flask.session['state']
+    flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+        'client_secret.json',
+        scopes=['https://www.googleapis.com/auth/drive.metadata.readonly'],
+        state=state)
+    flow.redirect_uri = Flask.url_for('oauth2callback', _external=True)
+
+    authorization_response = Flask.request.url
+    flow.fetch_token(authorization_response=authorization_response)
+
+    # Store the credentials in the session.
+    # ACTION ITEM for developers:
+    #     Store user's access and refresh tokens in your data store if
+    #     incorporating this code into your real app.
+    credentials = flow.credentials
+    Flask.session['credentials'] = {
+        'token': credentials.token,
+        'refresh_token': credentials.refresh_token,
+        'token_uri': credentials.token_uri,
+        'client_id': credentials.client_id,
+        'client_secret': credentials.client_secret,
+        'granted_scopes': credentials.granted_scopes}
+
+@app.route("/authToAccess", methods=["POST"])
+def authToAccess():
+    data = request.get_json()
+    
+    code = data['auth-code']
+    
+    return jsonify({'code': code}), 200
+    
+    
 
 
 if __name__=="__main__":
