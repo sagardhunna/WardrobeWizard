@@ -12,15 +12,16 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import { Link } from "@mui/material";
-import LoginPopover from "../LoginPopover/LoginPopover";
+import LogoutPopover from "../LogoutPopover/LogoutPopover";
+import { useLocation } from "react-router-dom";
 
 const pages = [
+  "Home",
   "Outfits",
   "Inventory",
   "Add To Inventory",
   "Create Outfit",
 ];
-const settings = ["Logout"];
 
 function Navbar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -41,6 +42,13 @@ function Navbar() {
     setAnchorElUser(null);
   };
 
+  // below code disables all navbar buttons unless user has successfully logged in
+  const [isSpecificPage, setIsSpecificPage] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsSpecificPage(location.pathname === "/");
+  }, [location]);
+
   return (
     <AppBar
       position="static"
@@ -52,7 +60,6 @@ function Navbar() {
             variant="h6"
             noWrap
             component="a"
-            href="/"
             sx={{
               mr: 2,
               display: { xs: "none", md: "flex" },
@@ -91,19 +98,30 @@ function Navbar() {
             </Menu>
           </Box>
           <AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
-          <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex", flexDirection: 'row', justifyContent: 'flex-end' }, marginRight: '1%' }}>
+          <Box
+            sx={{
+              flexGrow: 1,
+              display: {
+                xs: "none",
+                md: "flex",
+                flexDirection: "row",
+                justifyContent: "flex-end",
+              },
+            }}
+          >
             {pages.map((page) => (
               <Button
                 key={page}
                 onClick={handleCloseNavMenu}
                 sx={{ my: 2, color: "#504B38", display: "block" }}
                 href={page}
+                disabled={isSpecificPage}
               >
-              {page}
+                {page}
               </Button>
             ))}
           </Box>
-          <LoginPopover />
+          <LogoutPopover isSpecificPage={isSpecificPage}/>
         </Toolbar>
       </Container>
     </AppBar>

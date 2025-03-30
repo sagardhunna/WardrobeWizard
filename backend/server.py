@@ -1,18 +1,25 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 from flask_cors import CORS
 import mysql.connector
 import os
 from dotenv import load_dotenv
-import google_auth_oauthlib
+from authlib.integrations.flask_client import OAuth
 
 app = Flask(__name__)
-CORS(app)
 
 load_dotenv()
+
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
 MYSQL_DATABASE = os.getenv("MYSQL_DATABASE")
+CLIENT_ID = os.getenv("CLIENT_ID")
+CLIENT_SECRET = os.getenv("CLIENT_SECRET")
+SECRET_KEY = os.getenv("SECRET_KEY")
+SERVER = os.getenv("SERVER")
 
-db=mysql.connector.connect(
+app.secret_key = SECRET_KEY
+CORS(app, origins=[SERVER])
+
+db = mysql.connector.connect(
     host='localhost',
     user='root',
     password=MYSQL_PASSWORD,
@@ -22,6 +29,76 @@ db=mysql.connector.connect(
 @app.route("/")
 def home():
     return "<h1>Welcome to Wizard Wardrobe Backend</h1>"
+
+
+oauth = OAuth(app)
+
+google = oauth.register(
+    name='google',
+    client_id=CLIENT_ID,
+    client_secret=CLIENT_SECRET,
+    access_token_url= "https://www.googleapis.com/oauth2/v4/token",
+    access_token_params=None,
+    authorize_url= "https://accounts.google.com/o/oauth2/v2/auth",
+    authorize_params=None,
+    api_base_url= "https://www.googleapis.com/oauth2/v3/",
+    client_kwargs= {"scope": "openid email profile"},
+    server_metadata_url= 'https://accounts.google.com/.well-known/openid-configuration'
+)
+
+# login for google
+@app.route("/login/google")
+def login_google():
+    try:
+        redirect_uri = url_for('authorize_google',_external=True) # _external so that the google pop up window comes out to log in
+        return google.authorize_redirect(redirect_uri)
+    except Exception as e:
+        app.logger.error(f'Error during login: {str(e)}')
+        return {'Error during login': str(e)}, 500
+
+
+# authorize for google
+@app.route("/authorize/google")
+def authorize_google():
+    try:
+        token = google.authorize_access_token()
+        userinfo_endpoint = google.server_metadata['userinfo_endpoint'] 
+        resp = google.get(userinfo_endpoint)
+        user_info = resp.json()
+        username = user_info['email']
+        
+        session['username'] = username
+        session['oauth_token'] = token
+        
+        return redirect(url_for('routing'))
+    except Exception as e:
+        app.logger.error(f'Error during authorization: {str(e)}')
+        return {'Error during authorization': str(e)}, 500
+
+@app.route("/routing")
+def routing():
+    if 'username' in session:
+        return redirect(f'{SERVER}/Home')
+    else:
+        return redirect(f'{SERVER}/')
+    
+@app.route("/getData", methods=['GET'])
+def getData():
+    return jsonify({
+        'email': session['username'],
+        'data': session['oauth_token']
+    }), 200
+    
+    
+@app.route("/logout", methods=["POST"])
+def logout():
+    # Remove the user session data
+    session.clear()
+    
+    return redirect('http://localhost:5173/')  # Redirect the user to the homepage or login page
+
+
+
 
 @app.route('/getTables', methods=['GET'])
 def get_tables():
@@ -71,42 +148,7 @@ def view_students():
         info_map
     ), 200
 
-@app.route("/auth-to-refresh")
-def auth_to_refresh():
-    state = Flask.session['state']
-    flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-        'client_secret.json',
-        scopes=['https://www.googleapis.com/auth/drive.metadata.readonly'],
-        state=state)
-    flow.redirect_uri = Flask.url_for('oauth2callback', _external=True)
-
-    authorization_response = Flask.request.url
-    flow.fetch_token(authorization_response=authorization_response)
-
-    # Store the credentials in the session.
-    # ACTION ITEM for developers:
-    #     Store user's access and refresh tokens in your data store if
-    #     incorporating this code into your real app.
-    credentials = flow.credentials
-    Flask.session['credentials'] = {
-        'token': credentials.token,
-        'refresh_token': credentials.refresh_token,
-        'token_uri': credentials.token_uri,
-        'client_id': credentials.client_id,
-        'client_secret': credentials.client_secret,
-        'granted_scopes': credentials.granted_scopes}
-
-@app.route("/authToAccess", methods=["POST"])
-def authToAccess():
-    data = request.get_json()
-    
-    code = data['auth-code']
-    
-    return jsonify({'code': code}), 200
-    
-    
-
 
 if __name__=="__main__":
-    print("dbnecting to DB...")
+    print("connecting to DB...")
     app.run(debug=True)
