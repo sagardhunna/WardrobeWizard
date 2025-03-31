@@ -6,6 +6,85 @@ import { useNavigate } from 'react-router-dom';
 
 function Home() {
 
+  const SERVER = import.meta.env.VITE_SERVER;
+
+  const [userEmail, setUserEmail] = useState('UNDEFINED')
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const options = {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        };
+        const promise = await fetch(`${SERVER}/getData`, options);
+        const response = await promise.json();
+        setUserEmail(response.data.userinfo.email)
+        console.log("Response from getData:", response.data);
+      } catch (error) {
+        console.log("Error in getData:", error);
+      }
+    };
+
+    getData()
+  }, [])
+
+  useEffect(() => { 
+    console.log("email is:", userEmail)
+    const createUser = async () => {
+      try {
+        const options = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: userEmail
+          })
+        }
+
+        const promise = await fetch(`${SERVER}/createUser`, options)
+        const response = await promise.json()
+
+        console.log("response from createUser:", response)
+      } catch (error) { 
+        console.log("Error in createUser():", error)
+      }
+    }
+
+    const checkHasAccount = async () => {
+      try {
+        const options = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: userEmail
+          })
+        }
+
+        const promise = await fetch(`${SERVER}/hasAccount`, options)
+        const response = await promise.json()
+        console.log("response from checkHasAccount():", response.hasAccount)
+        return response.hasAccount
+      } catch (error) {
+        console.log("Error in checkHasAccount:", error)
+      }
+    }
+    const hasAccount = checkHasAccount()
+
+    if (hasAccount) {
+      console.log("USER HAS ACCOUNT, WE WILL NOT CREATE ONE")
+    } else {
+      createUser()
+    }
+  }, [userEmail])
+
+
   return (
     <div style={{ color: "#504B38" }} className="home-container">
       <div className="left-side">

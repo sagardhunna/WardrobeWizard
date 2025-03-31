@@ -127,7 +127,7 @@ def logout():
     except Exception as e:
         return jsonify({"Error": str(e)})
 
-@app.route("/isLoggedIn")
+@app.route("/isLoggedIn") # just a test route I am using to make sure log out works
 def isLoggedIn():
     global is_logged_in
     print("is_logged_in @ isLoggedIn", is_logged_in)
@@ -135,53 +135,52 @@ def isLoggedIn():
         'isLoggedIn': is_logged_in
     })
 
-@app.route('/getTables', methods=['GET'])
-def get_tables():
-    cursor=db.cursor()
-    cursor.execute("SHOW TABLES;")
-    tables=cursor.fetchall() # fetches the vessel from the cursor variable
-    cursor.close()
-    db.close()
-    print(tables)
-    table_names=[table[0] for table in tables]
-    return jsonify({"tables":table_names}), 200
-
-@app.route("/addStudent", methods=["POST"])
-def add_student():
+@app.route("/createUser", methods=["POST"])
+def createUser():
+    data = request.get_json()
     try:
-        data=request.get_json()
-        name=data.get('name')
-        mark=data.get('mark')
-
-        cursor=db.cursor() # allows us to execute mysql queries
-        sql_query = 'INSERT INTO students (name, mark) VALUES (%s, %s);'
-        cursor.execute(sql_query, (name, mark))
+        email = [data.get('email')]
+        print(f'email is: {email}')
+        print(f"request.get_json(): {request.get_json()}")
+        sql_query = 'INSERT INTO users (email) VALUES (%s);'
+        
+        cursor = db.cursor() # allows us to excute MySQL queries
+        cursor.execute(sql_query, (email))
         db.commit()
-
-        return jsonify({'message': 'Successfully added student'}), 200
+        
+        return jsonify({
+            'message': 'Successfully created user!'
+        }), 200
     except Exception as e:
-        return jsonify({'Error': f'{e}'}), 405
+        return jsonify({
+            "Error": str(e)
+        }), 500
+        
+@app.route("/hasAccount", methods=["POST"])
+def checkHasAccount():
+    data = request.get_json()
+    try:
+        sql_query = 'SELECT email FROM users WHERE email = (%s);'
+        email = data.get('email')
+        
+        cursor = db.cursor() # allows us to excute MySQL queries
+        cursor.execute(sql_query, (email,))
+        result = cursor.fetchone()
 
-@app.route("/viewStudents", methods=["GET"])
-def view_students():
-    cursor=db.cursor()
-
-    sql_query='SELECT * FROM students;'
-    cursor.execute(sql_query)
-
-    students=cursor.fetchall()
-    cursor.close()
-    db.close()
-    print(students)
-
-    info_map = {}
-
-    for student in students:
-        info_map[student[1]] = [f'Student ID: {student[0]}', f'Student Mark: {student[2]}']
-
-    return jsonify(
-        info_map
-    ), 200
+        if result is None:
+            return jsonify({
+                'hasAccount': False
+            })
+        else:
+            return jsonify({
+                'hasAccount': True
+            })
+        
+    except Exception as e:
+        return jsonify({
+            "Error": str(e)
+        }), 500
+        
 
 
 if __name__=="__main__":

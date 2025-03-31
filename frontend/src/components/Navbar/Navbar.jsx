@@ -51,26 +51,6 @@ function Navbar() {
     setIsSpecificPage(location.pathname === "/");
   }, [location]);
 
-  const SERVER = import.meta.env.VITE_SERVER;
-
-  const getData = async () => {
-    try {
-      const options = {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      };
-      const promise = await fetch(`${SERVER}/getData`, options);
-      const response = await promise.json();
-      console.log("Response from getData:", response.data);
-    } catch (error) {
-      console.log("Error in getData:", error);
-    }
-  };
-
-
   return (
     <AppBar
       position="static"
@@ -144,7 +124,6 @@ function Navbar() {
             ))}
           </Box>
           <LogoutPopover isSpecificPage={isSpecificPage} />
-          <Button onClick={getData}>GetData</Button>
         </Toolbar>
       </Container>
     </AppBar>
