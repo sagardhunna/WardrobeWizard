@@ -1,9 +1,10 @@
-from flask import Flask, jsonify, redirect, render_template, request, session, url_for
+from flask import Flask, jsonify, make_response, redirect, render_template, request, session, url_for
 from flask_cors import CORS
 import mysql.connector
 import os
 from dotenv import load_dotenv
 from authlib.integrations.flask_client import OAuth
+import time
 
 app = Flask(__name__)
 
@@ -17,7 +18,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 SERVER = os.getenv("SERVER")
 
 app.secret_key = SECRET_KEY
-CORS(app, origins=[SERVER])
+CORS(app, origins=[SERVER], supports_credentials=True)
 
 db = mysql.connector.connect(
     host='localhost',
@@ -25,6 +26,8 @@ db = mysql.connector.connect(
     password=MYSQL_PASSWORD,
     database=MYSQL_DATABASE
 )
+
+is_logged_in = False
 
 @app.route("/")
 def home():
@@ -77,27 +80,59 @@ def authorize_google():
 
 @app.route("/routing")
 def routing():
+    global is_logged_in
     if 'username' in session:
+        is_logged_in = True
+        print("is_logged_in @ routing", is_logged_in)
         return redirect(f'{SERVER}/Home')
     else:
         return redirect(f'{SERVER}/')
     
 @app.route("/getData", methods=['GET'])
 def getData():
-    return jsonify({
-        'email': session['username'],
-        'data': session['oauth_token']
-    }), 200
+    global is_logged_in
+    try:
+        print("is_logged_in @ getData", is_logged_in)
+        if is_logged_in:
+            return jsonify({
+                'email': session['username'],
+                'data': session['oauth_token']
+            }), 200
+        else:
+            session.clear()
+            return jsonify({
+                'email': 'UNDEFINED',
+                'data': 'UNDEFINED'
+            })
+    except Exception as e:
+        return jsonify({
+            'Error': str(e)
+        })
     
     
 @app.route("/logout", methods=["POST"])
 def logout():
     # Remove the user session data
-    session.clear()
-    
-    return redirect('http://localhost:5173/')  # Redirect the user to the homepage or login page
+    global is_logged_in
+    try:
+        is_logged_in = False 
+        print("is_logged_in @ logout", is_logged_in)
+       
+        return jsonify({"message": "Logged out successfully"}), 200 
+    except Exception as e:
+        return jsonify({"Error": str(e)})
 
+@app.route("/isLoggedIn")
+def isLoggedIn():
+    global is_logged_in
+    print("is_logged_in @ isLoggedIn", is_logged_in)
+    return jsonify({
+        'isLoggedIn': is_logged_in
+    })
 
+@app.route("/isTokenValid", methods=["GET"])
+def isTokenValid():
+    current_time = time.time()
 
 
 @app.route('/getTables', methods=['GET'])

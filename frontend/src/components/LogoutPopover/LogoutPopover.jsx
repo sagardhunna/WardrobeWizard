@@ -9,7 +9,15 @@ function LogoutPopover({ isSpecificPage }) {
 
   const logout = async () => {
     try {
-        
+        const options = {
+            method: "POST",
+            credentials: "include",
+        }
+
+        const promise = await fetch(`${SERVER}/logout`, options)
+        const response = await promise.json()
+
+        console.log("RESPONSE FROM LOGOUT:", response)
       } catch (error) {
         console.error('Error during logout', error);
       }
