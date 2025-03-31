@@ -14,6 +14,8 @@ import AdbIcon from "@mui/icons-material/Adb";
 import { Link } from "@mui/material";
 import LogoutPopover from "../LogoutPopover/LogoutPopover";
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const pages = [
   "Home",
@@ -48,6 +50,26 @@ function Navbar() {
   React.useEffect(() => {
     setIsSpecificPage(location.pathname === "/");
   }, [location]);
+
+  const SERVER = import.meta.env.VITE_SERVER;
+
+  const getData = async () => {
+    try {
+      const options = {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      };
+      const promise = await fetch(`${SERVER}/getData`, options);
+      const response = await promise.json();
+      console.log("Response from getData:", response.data);
+    } catch (error) {
+      console.log("Error in getData:", error);
+    }
+  };
+
 
   return (
     <AppBar
@@ -121,7 +143,8 @@ function Navbar() {
               </Button>
             ))}
           </Box>
-          <LogoutPopover isSpecificPage={isSpecificPage}/>
+          <LogoutPopover isSpecificPage={isSpecificPage} />
+          <Button onClick={getData}>GetData</Button>
         </Toolbar>
       </Container>
     </AppBar>

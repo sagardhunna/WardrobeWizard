@@ -8,6 +8,11 @@ import time
 
 app = Flask(__name__)
 
+app.config.update(
+    SESSION_COOKIE_SAMESITE='None',  # Allow cross-origin cookies
+    SESSION_COOKIE_SECURE=True,      # Make sure the cookie is sent over HTTPS
+)
+
 load_dotenv()
 
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
@@ -129,11 +134,6 @@ def isLoggedIn():
     return jsonify({
         'isLoggedIn': is_logged_in
     })
-
-@app.route("/isTokenValid", methods=["GET"])
-def isTokenValid():
-    current_time = time.time()
-
 
 @app.route('/getTables', methods=['GET'])
 def get_tables():

@@ -9,6 +9,7 @@ import AddToInventory from "./pages/AddToInventory/AddToInventory";
 import Login from "./pages/Login/Login";
 
 function App() {
+
   return (
     <Router>
       <Navbar />

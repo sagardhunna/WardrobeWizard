@@ -1,35 +1,10 @@
 import React from "react";
 import Tutorial from "../../components/Tutorial/Tutorial";
-import { useState, useEffect } from "react";
 import "./home.css";
+import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 
 function Home() {
-
-  const SERVER = import.meta.env.VITE_SERVER;
-
-  useEffect(() => {
-    const checkIsLoggedIn = async () => {
-      try {
-        const options = {
-          method: "GET",
-        }
-        const promise = await fetch(`${SERVER}/isLoggedIn`)
-        const response = await promise.json()
-
-        console.log("Response from checkIsLoggedIn:", response.isLoggedIn)
-      } catch (error) {
-        console.log("Error in is logged in:", error)
-      }
-    }
-
-    const intervalId = setInterval(() => {
-      checkIsLoggedIn();
-    }, 5000)
-
-    return () => clearInterval(intervalId);
-
-  },[])
-
 
   return (
     <div style={{ color: "#504B38" }} className="home-container">

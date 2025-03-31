@@ -1,7 +1,7 @@
 import React from "react";
 import Button from "@mui/material/Button";
-import { useLocation } from 'react-router-dom';
-
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 function LogoutPopover({ isSpecificPage }) {
 
@@ -18,6 +18,7 @@ function LogoutPopover({ isSpecificPage }) {
         const response = await promise.json()
 
         console.log("RESPONSE FROM LOGOUT:", response)
+        handleLogout()
       } catch (error) {
         console.error('Error during logout', error);
       }
@@ -26,6 +27,21 @@ function LogoutPopover({ isSpecificPage }) {
   if (isSpecificPage) {
     return null; // Do not render the Logout button if on the home page ("/")
   }
+
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+
+  const navigate = useNavigate(); // useNavigate hook for programmatic navigation
+
+  useEffect(() => {
+    print("isLoggedIn:", isLoggedIn)
+    if (!isLoggedIn) {
+      navigate("/"); // Redirect to login page if not logged in
+    }
+  }, [isLoggedIn, navigate]); // This hook runs every time isLoggedIn changes
+
+  const handleLogout = () => {
+    setIsLoggedIn(false); // This will cause the redirect when isLoggedIn is false
+  };
 
   return (
     <Button sx={{ color: "#504B38" }} onClick={logout}>
