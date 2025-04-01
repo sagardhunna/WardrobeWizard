@@ -83,7 +83,7 @@ function LogoutPopover({ isSpecificPage }) {
     // Cleanup on unmount
     return () => clearInterval(interval);
 
-  }, [])
+  })
 
 
   const handleLogout = () => {

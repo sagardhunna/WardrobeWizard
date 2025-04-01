@@ -1,10 +1,12 @@
-from flask import Flask, jsonify, make_response, redirect, render_template, request, session, url_for
+from flask import Flask, jsonify, make_response, redirect, render_template, request, session, url_for, Blueprint
 from flask_cors import CORS
 import mysql.connector
 import os
 from dotenv import load_dotenv
 from authlib.integrations.flask_client import OAuth
-import time
+from auth import create_auth_blueprint
+
+ALLOWED_EXTENSIONS = {'png', 'HEIC', 'jpeg', 'jpg'}
 
 app = Flask(__name__)
 
@@ -32,7 +34,7 @@ db = mysql.connector.connect(
     database=MYSQL_DATABASE
 )
 
-is_logged_in = False
+#is_logged_in = False
 
 @app.route("/")
 def home():
@@ -54,86 +56,19 @@ google = oauth.register(
     server_metadata_url= 'https://accounts.google.com/.well-known/openid-configuration'
 )
 
-# login for google
-@app.route("/login/google")
-def login_google():
-    try:
-        redirect_uri = url_for('authorize_google',_external=True) # _external so that the google pop up window comes out to log in
-        return google.authorize_redirect(redirect_uri)
-    except Exception as e:
-        app.logger.error(f'Error during login: {str(e)}')
-        return {'Error during login': str(e)}, 500
 
 
-# authorize for google
-@app.route("/authorize/google")
-def authorize_google():
-    try:
-        token = google.authorize_access_token()
-        userinfo_endpoint = google.server_metadata['userinfo_endpoint'] 
-        resp = google.get(userinfo_endpoint)
-        user_info = resp.json()
-        username = user_info['email']
-        
-        session['username'] = username
-        session['oauth_token'] = token
-        
-        return redirect(url_for('routing'))
-    except Exception as e:
-        app.logger.error(f'Error during authorization: {str(e)}')
-        return {'Error during authorization': str(e)}, 500
+# SECTION START FOR IMAGE UPLOAD AND RETRIEVAL FROM AWS S3
 
-@app.route("/routing")
-def routing():
-    global is_logged_in
-    if 'username' in session:
-        is_logged_in = True
-        print("is_logged_in @ routing", is_logged_in)
-        return redirect(f'{SERVER}/Home')
-    else:
-        return redirect(f'{SERVER}/')
-    
-@app.route("/getData", methods=['GET'])
-def getData():
-    global is_logged_in
-    try:
-        print("is_logged_in @ getData", is_logged_in)
-        if is_logged_in:
-            return jsonify({
-                'email': session['username'],
-                'data': session['oauth_token']
-            }), 200
-        else:
-            session.clear()
-            return jsonify({
-                'email': 'UNDEFINED',
-                'data': 'UNDEFINED'
-            })
-    except Exception as e:
-        return jsonify({
-            'Error': str(e)
-        })
-    
-    
-@app.route("/logout", methods=["POST"])
-def logout():
-    # Remove the user session data
-    global is_logged_in
-    try:
-        is_logged_in = False 
-        print("is_logged_in @ logout", is_logged_in)
-       
-        return jsonify({"message": "Logged out successfully"}), 200 
-    except Exception as e:
-        return jsonify({"Error": str(e)})
 
-@app.route("/isLoggedIn") # just a test route I am using to make sure log out works
-def isLoggedIn():
-    global is_logged_in
-    print("is_logged_in @ isLoggedIn", is_logged_in)
-    return jsonify({
-        'isLoggedIn': is_logged_in
-    })
+
+
+
+
+
+
+
+# SECTION END FOR IMAGE UPLOAD AND RETRIEVAL FROM AWS S3
 
 @app.route("/createUser", methods=["POST"])
 def createUser():
@@ -180,6 +115,10 @@ def checkHasAccount():
         return jsonify({
             "Error": str(e)
         }), 500
+        
+    
+auth_bp = create_auth_blueprint(google)
+app.register_blueprint(auth_bp)
         
 
 
