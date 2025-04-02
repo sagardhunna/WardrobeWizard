@@ -28,7 +28,35 @@ function AddToInventory() {
   const [isUploaded, setIsUploaded] = useState(false);
   const [open, setOpen] = useState(false);
 
+
+
+  const SERVER = import.meta.env.VITE_SERVER;
+
   const handleFileSubmission = async (fileData) => {
+    const formData = new FormData();
+
+    formData.append("file-to-save", fileData[0])
+    console.log("Filedata[0]", fileData[0])
+
+    try {
+      const options = {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      };
+
+      const promise = await fetch(`${SERVER}/uploadFile`, options)
+      const response = await promise.json()
+
+      console.log("Response from uploadFile:", response)
+    } catch (error) {
+      console.log("Error in getting file data:", error)
+    }
+
+
+
+
+
     setOpen(false)
     console.log("FileData:", fileData);
     console.log("FileData[0].name:", fileData[0].name);
@@ -43,7 +71,9 @@ function AddToInventory() {
             blob: file,
             toType: "image/jpeg",
           });
+          console.log("ConvertedBlob:", convertedBlob)
           const url = URL.createObjectURL(convertedBlob);
+          console.log("url:", url)
           setPreviewURL(url); // use this in <img src={previewUrl} />
         } catch (error) {
           console.log("Error in conversion of heic:", error);

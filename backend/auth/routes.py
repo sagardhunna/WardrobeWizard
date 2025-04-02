@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 
 is_logged_in = False
+load_dotenv()
 
 
 def create_auth_blueprint(google):

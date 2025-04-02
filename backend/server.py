@@ -1,12 +1,14 @@
-from flask import Flask, jsonify, make_response, redirect, render_template, request, session, url_for, Blueprint
+from flask import Flask, jsonify, request, session, url_for
 from flask_cors import CORS
 import mysql.connector
 import os
 from dotenv import load_dotenv
 from authlib.integrations.flask_client import OAuth
 from auth import create_auth_blueprint
+from aws import create_aws_blueprint
+import boto3, botocore
+import uuid
 
-ALLOWED_EXTENSIONS = {'png', 'HEIC', 'jpeg', 'jpg'}
 
 app = Flask(__name__)
 
@@ -57,15 +59,63 @@ google = oauth.register(
 )
 
 
-
+'''
 # SECTION START FOR IMAGE UPLOAD AND RETRIEVAL FROM AWS S3
+ALLOWED_EXTENSIONS = {'png', 'heic', 'jpeg', 'jpg'}
 
+AWS_BUCKET_NAME = os.getenv("AWS_BUCKET_NAME")
+AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY")
+AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
 
+s3 = boto3.client(
+    "s3",
+    aws_access_key_id=AWS_ACCESS_KEY,
+    aws_secret_access_key=AWS_SECRET_KEY
+)
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
-
-
+@app.route('/uploadFile', methods=["POST"])
+def uploadFile(acl="public-read"):
+    if 'file-to-save' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+    
+    
+    uploaded_file = request.files["file-to-save"]
+    print(f'uploaded_file:', uploaded_file)
+    
+    if not allowed_file(uploaded_file.filename):
+        return jsonify({
+            "Error": "FILE NOT ALLOWED!"
+        })    
+    
+    secure_filename = uuid.uuid4().hex + '.' + uploaded_file.filename.rsplit('.', 1)[1].lower() # generates a unique number for us
+    
+    try:
+        s3.upload_fileobj(
+            uploaded_file,
+            AWS_BUCKET_NAME,
+            secure_filename,
+            ExtraArgs={
+                "ACL": acl,
+                "ContentType": uploaded_file.content_type 
+            }
+        )
+        
+        s3_url = f"http://{AWS_BUCKET_NAME}.s3.amazonaws.com/{secure_filename}"
+        
+        return jsonify({
+            "message": "Upload successful",
+            "filename": secure_filename,
+            "url": s3_url
+        }), 200
+    
+    except Exception as e:
+        return jsonify({
+            "Error": str(e)
+        }), 500
+'''
 
 
 # SECTION END FOR IMAGE UPLOAD AND RETRIEVAL FROM AWS S3
@@ -119,6 +169,9 @@ def checkHasAccount():
     
 auth_bp = create_auth_blueprint(google)
 app.register_blueprint(auth_bp)
+
+aws_bp = create_aws_blueprint()
+app.register_blueprint(aws_bp) 
         
 
 
