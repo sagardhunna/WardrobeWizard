@@ -9,7 +9,7 @@ import Alert from "@mui/material/Alert";
 import IconButton from "@mui/material/IconButton";
 import Collapse from "@mui/material/Collapse";
 import CloseIcon from "@mui/icons-material/Close";
-import Spinner from "react-bootstrap/Spinner";
+import SelectCategoryDropDown from "../../components/SelectCategoryDropDown/SelectCategoryDropDown";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -25,39 +25,15 @@ const VisuallyHiddenInput = styled("input")({
 
 function AddToInventory() {
   const [previewURL, setPreviewURL] = useState(null);
-  const [isUploaded, setIsUploaded] = useState(false);
+  const [isUploaded, setIsUploaded] = useState(true);
   const [open, setOpen] = useState(false);
-
-
+  const [fileData, setFileData] = useState();
 
   const SERVER = import.meta.env.VITE_SERVER;
 
   const handleFileSubmission = async (fileData) => {
-    const formData = new FormData();
-
-    formData.append("file-to-save", fileData[0])
-    console.log("Filedata[0]", fileData[0])
-
-    try {
-      const options = {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      };
-
-      const promise = await fetch(`${SERVER}/uploadFile`, options)
-      const response = await promise.json()
-
-      console.log("Response from uploadFile:", response)
-    } catch (error) {
-      console.log("Error in getting file data:", error)
-    }
-
-
-
-
-
-    setOpen(false)
+    setFileData(fileData)
+    setOpen(false);
     console.log("FileData:", fileData);
     console.log("FileData[0].name:", fileData[0].name);
     console.log("FileData[0].size (in bytes):", fileData[0].size);
@@ -71,9 +47,9 @@ function AddToInventory() {
             blob: file,
             toType: "image/jpeg",
           });
-          console.log("ConvertedBlob:", convertedBlob)
+          console.log("ConvertedBlob:", convertedBlob);
           const url = URL.createObjectURL(convertedBlob);
-          console.log("url:", url)
+          console.log("url:", url);
           setPreviewURL(url); // use this in <img src={previewUrl} />
         } catch (error) {
           console.log("Error in conversion of heic:", error);
@@ -94,69 +70,85 @@ function AddToInventory() {
   }, [previewURL]);
 
   return (
-    <div className="addToInventoryContainer">
-      <h1 style={{ backgroundColor: '#EBE5C2', padding: '0.5%', border: 'solid' }}>Add to your inventory here!</h1>
-      <Box
-        component="img"
-        sx={{
-          height: 466,
-          width: 700,
-          maxHeight: { xs: 466, md: 334 },
-          maxWidth: { xs: 700, md: 500 },
-          border: "solid black",
-        }}
-        src={previewURL}
-        hidden={!isUploaded}
-      />
-      <Collapse in={open}>
-        <Alert
-          action={
-            <IconButton
-              aria-label="close"
-              color="inherit"
-              size="small"
-              onClick={() => {
-                setOpen(false);
-              }}
-            >
-              <CloseIcon fontSize="inherit" />
-            </IconButton>
-          }
-          sx={{ mb: 2, backgroundColor: '#EBE5C2', color: '#504B38' }}
-          variant="filled"
-          severity="success"
-        >
-          Successfully uploaded image!
-        </Alert>
-      </Collapse>
+    <div className="main-container-ATI">
+      <div style={{ width:'30%', display: 'flex', justifyContent:'center', marginLeft: '10%'}}>
+      <SelectCategoryDropDown uploadedImage={isUploaded} fileData={fileData} />
+      </div>
 
-      <div
-        style={{
-          width: "50%",
-          height: "10%",
-          marginTop: "auto",
-          marginBottom: "3%",
-        }}
-      >
-        <Button
-          component="label"
-          role={undefined}
-          variant="contained"
-          tabIndex={-1}
-          sx={{
-            width: "50%",
-            height: "100%",
+      <div className="addToInventoryContainer">
+        <h1
+          style={{
             backgroundColor: "#EBE5C2",
-            color: "#504B38",
+            padding: "0.5%",
+            border: "solid",
           }}
         >
-          Upload files
-          <VisuallyHiddenInput
-            type="file"
-            onChange={(event) => handleFileSubmission(event.target.files)}
-            multiple
+          Add to your inventory here!
+        </h1>
+        <div className="center-blocks">
+          <Box
+            component="img"
+            sx={{
+              height: 466,
+              width: 700,
+              maxHeight: { xs: 466, md: 334 },
+              maxWidth: { xs: 700, md: 500 },
+              border: "solid black",
+            }}
+            src={previewURL}
+            hidden={!isUploaded}
           />
-        </Button>
+          <Collapse in={open}>
+            <Alert
+              action={
+                <IconButton
+                  aria-label="close"
+                  color="inherit"
+                  size="small"
+                  onClick={() => {
+                    setOpen(false);
+                  }}
+                >
+                  <CloseIcon fontSize="inherit" />
+                </IconButton>
+              }
+              sx={{ mb: 2, backgroundColor: "#EBE5C2", color: "#504B38" }}
+              variant="filled"
+              severity="success"
+            >
+              Successfully uploaded image!
+            </Alert>
+          </Collapse>
+
+          <div
+            style={{
+              width: "50%",
+              height: "10%",
+              marginTop: "auto",
+              marginBottom: "3%",
+            }}
+          >
+            <Button
+              component="label"
+              role={undefined}
+              variant="contained"
+              tabIndex={-1}
+              sx={{
+                width: "50%",
+                height: "100%",
+                backgroundColor: "#EBE5C2",
+                color: "#504B38",
+              }}
+            >
+              Upload files
+              <VisuallyHiddenInput
+                type="file"
+                onChange={(event) => handleFileSubmission(event.target.files)}
+                multiple
+              />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

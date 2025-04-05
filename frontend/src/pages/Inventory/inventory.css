@@ -1,0 +1,16 @@
+.inventory-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 80vh;
+    background-color: #EBE5C2;
+    margin-top: 1%;
+    border: solid black;
+}
+
+.images-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}

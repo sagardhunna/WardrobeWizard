@@ -1,10 +1,31 @@
-.addToInventoryContainer {
+.main-container-ATI {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     width: 100%;
     height: 85vh;
     background-color: #B9B28A;
     border: solid black;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1%;
+}
+
+
+.addToInventoryContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.center-blocks {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
     justify-content: center;
     align-items: center;
     gap: 1.5%;

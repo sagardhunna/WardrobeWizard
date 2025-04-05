@@ -70,5 +70,4 @@ def create_aws_blueprint():
                 "Error": str(e)
             }), 500
             
-            
     return aws_bp
