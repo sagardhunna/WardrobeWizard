@@ -3,7 +3,11 @@ import uuid
 import os
 from dotenv import load_dotenv
 import boto3
-
+import pillow_heif
+import io
+from werkzeug.datastructures import FileStorage
+import uuid
+from PIL import Image
 
 load_dotenv()
 
@@ -12,7 +16,7 @@ def create_aws_blueprint():
     
     aws_bp = Blueprint('aws', __name__)
     
-    ALLOWED_EXTENSIONS = {'png', 'heic', 'jpeg', 'jpg'}
+    ALLOWED_EXTENSIONS = {'png', 'jpeg', 'jpg'}
 
     AWS_BUCKET_NAME = os.getenv("AWS_BUCKET_NAME")
     AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY")
@@ -28,6 +32,23 @@ def create_aws_blueprint():
     # helper function to make sure file is correct filetype
     def allowed_file(filename):
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    
+    
+    def heic_to_jpeg(uploaded_file):
+        heif_image = pillow_heif.read_heif(uploaded_file.stream.read())
+        
+        image = Image.frombytes(heif_image.mode, heif_image.size, heif_image.data)
+        jpeg_io = io.BytesIO()
+        image.save(jpeg_io, format="JPEG")
+        jpeg_io.seek(0)
+        jpeg_file_name = uuid.uuid4().hex + '.jpeg'
+        jpeg_file = FileStorage(
+            stream=jpeg_io,
+            filename=jpeg_file_name,
+            content_type="image/jpeg"
+        )
+        
+        return jpeg_file
 
     # upload image to aws
     @aws_bp.route('/uploadFile', methods=["POST"])
@@ -39,10 +60,10 @@ def create_aws_blueprint():
         uploaded_file = request.files["file-to-save"]
         print(f'uploaded_file:', uploaded_file)
         
-        if not allowed_file(uploaded_file.filename):
-            return jsonify({
-                "Error": "FILE NOT ALLOWED!"
-            })    
+        file_type = uploaded_file.filename.rsplit('.', 1)[1].lower()
+        
+        if file_type == 'heic':
+            uploaded_file = heic_to_jpeg(uploaded_file)
         
         secure_filename = uuid.uuid4().hex + '.' + uploaded_file.filename.rsplit('.', 1)[1].lower() # generates a unique number for us
         

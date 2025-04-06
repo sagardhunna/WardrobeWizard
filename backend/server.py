@@ -6,9 +6,11 @@ from dotenv import load_dotenv
 from authlib.integrations.flask_client import OAuth
 from auth import create_auth_blueprint
 from aws import create_aws_blueprint
-import boto3, botocore
+from PIL import Image
+import pillow_heif
+import io
+from werkzeug.datastructures import FileStorage
 import uuid
-
 
 app = Flask(__name__)
 
@@ -140,6 +142,27 @@ def getImages():
     except Exception as e:
         return jsonify({
             "Error": str(e)
+        }), 500
+        
+        
+ALLOWED_EXTENSIONS = {'png', 'jpeg', 'jpg'}
+        
+# helper function to make sure file is correct filetype
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS        
+        
+        
+@app.route("/testFileConversion", methods=["POST"])
+def convertFile():
+    try:
+        uploaded_file = request.files["file-to-save"]    
+        
+        return jsonify({
+            "uploaded_file": str(uploaded_file.filename.rsplit('.', 1)[1].lower())
+        }), 200   
+    except Exception as e:
+        return jsonify({
+            "Error in convert file": str(e)
         }), 500
         
     

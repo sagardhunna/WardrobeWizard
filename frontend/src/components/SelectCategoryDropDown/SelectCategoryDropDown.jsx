@@ -53,6 +53,31 @@ export default function SelectCategoryDropDown({ uploadedImage, fileData }) {
     }
   }, [categoryName])
 
+  async function testDataConversion() {
+    console.log("Filedata in testDataConversion:", fileData[0])
+
+    const formData = new FormData();
+
+    formData.append("file-to-save", fileData[0]);
+    console.log("Filedata[0]", fileData[0]);
+  
+    try {
+      const options = {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      };
+  
+      const promise = await fetch(`${SERVER}/testFileConversion`, options);
+      const response = await promise.json();
+  
+      console.log("Response from testFileConversion:", response);
+    } catch (error) {
+      console.log("Error in testFileConversion:", error);
+    }
+
+  }
+
 
     // if image has been uploaded and we contain it's data, we need to first check if they have a category selected, then
   // we can save the images to AWS and SQL
@@ -117,6 +142,24 @@ export default function SelectCategoryDropDown({ uploadedImage, fileData }) {
         onClick={handleSave}
       >
         Save Image
+      </Button>
+
+
+      <Button
+        component="label"
+        role={undefined}
+        variant="contained"
+        tabIndex={-1}
+        sx={{
+          width: "50%",
+          height: "100%",
+          backgroundColor: "#EBE5C2",
+          color: "#504B38",
+          marginTop: '5%'
+        }}
+        onClick={testDataConversion}
+      >
+        Test Data Conversion
       </Button>
     </div>
   );

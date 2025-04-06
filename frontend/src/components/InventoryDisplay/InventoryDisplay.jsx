@@ -12,6 +12,7 @@ export default function InventoryDisplay({ inventoryImages }) {
             src={`${item.image_url}?w=164&h=164&fit=crop&auto=format`}
             loading="lazy"
             style={{ border: 'solid black' }}
+            draggable='false'
           />
         </ImageListItem>
       ))}
