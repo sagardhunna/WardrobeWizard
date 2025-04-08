@@ -216,13 +216,15 @@ def viewImages():
         })    
         
 # retrieve image from SQL SERVER
-@app.route("/getImages", methods=["GET"])
+@app.route("/getImages", methods=["POST"])
 def getImages():
+    data = request.get_json()
     try:
+        user_id = data.get("user_id")
         sql_query = 'SELECT user_id, image_url, image_category FROM images WHERE user_id = (%s);'
         
         cursor = db.cursor()
-        cursor.execute(sql_query, (24,))
+        cursor.execute(sql_query, (user_id,))
         results = cursor.fetchall()
 
         data = []
