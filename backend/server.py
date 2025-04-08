@@ -38,7 +38,6 @@ db = mysql.connector.connect(
     database=MYSQL_DATABASE
 )
 
-#is_logged_in = False
 
 @app.route("/")
 def home():
@@ -107,6 +106,64 @@ def checkHasAccount():
             "Error": str(e)
         }), 500
         
+        
+@app.route("/viewUsers", methods=["GET"])
+def viewUsers():
+    try:
+        sql_query = 'SELECT * FROM users;'
+        cursor = db.cursor()
+        
+        cursor.execute(sql_query)
+        results = cursor.fetchall()
+        
+        data = []
+        
+        for result in results: 
+            user_id = result[0]
+            user_email = result[1]           
+                        
+            information = {
+                'user_id': user_id,
+                'user_email': user_email
+            }
+            
+            data.append(information)
+        
+        return data, 200
+    except Exception as e:
+        return jsonify({
+            "Error": str(e)
+        })        
+        
+@app.route("/viewImages", methods=["GET"])
+def viewImages():
+    try:
+        sql_query = 'SELECT * FROM images;'
+        cursor = db.cursor()
+        
+        cursor.execute(sql_query)
+        results = cursor.fetchall()
+        
+        data = []
+        
+        for result in results: 
+            image_category = result[1]           
+            user_id = result[2]
+            image_url = result[3]
+            
+            information = {
+                'image_url': image_url,
+                'image_category': image_category,
+                'user_id': user_id,
+            }
+            
+            data.append(information)
+        
+        return data, 200
+    except Exception as e:
+        return jsonify({
+            "Error": str(e)
+        })    
         
 # retrieve image from SQL SERVER
 @app.route("/getImages", methods=["GET"])

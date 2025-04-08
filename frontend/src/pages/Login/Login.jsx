@@ -1,9 +1,7 @@
 import React, { useState } from 'react'
 import LoginPopover from "../../components/LoginPopover/LoginPopover"
-import { Button } from '@mui/material';
 
 function Login() {
-    const [info, setInfo] = useState('');
 
   return (
     <>

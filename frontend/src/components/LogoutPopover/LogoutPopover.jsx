@@ -17,7 +17,6 @@ function LogoutPopover({ isSpecificPage }) {
       const response = await promise.json();
 
       console.log("RESPONSE FROM LOGOUT:", response);
-      handleLogout();
     } catch (error) {
       console.error("Error during logout", error);
     }
@@ -83,11 +82,12 @@ function LogoutPopover({ isSpecificPage }) {
     // Cleanup on unmount
     return () => clearInterval(interval);
 
-  })
+  }, [])
 
 
   const handleLogout = () => {
     setIsLoggedIn(false); // This will cause the redirect when isLoggedIn is false
+    logout()
   };
 
   return (
