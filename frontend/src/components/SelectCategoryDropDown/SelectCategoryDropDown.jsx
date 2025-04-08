@@ -34,6 +34,8 @@ export default function SelectCategoryDropDown({ uploadedImage, fileData }) {
 
   const [categoryName, setCategoryName] = React.useState([]);
   const [canSave, setCanSave] = useState(false);
+  const [imageURL, setImageURL] = useState('');
+  const [userID, setUserID] = useState(-1)
 
   const handleChange = (event) => {
     const {
@@ -53,30 +55,30 @@ export default function SelectCategoryDropDown({ uploadedImage, fileData }) {
     }
   }, [categoryName])
 
-  async function testDataConversion() {
-    console.log("Filedata in testDataConversion:", fileData[0])
+  // async function testDataConversion() {
+  //   console.log("Filedata in testDataConversion:", fileData[0])
 
-    const formData = new FormData();
+  //   const formData = new FormData();
 
-    formData.append("file-to-save", fileData[0]);
-    console.log("Filedata[0]", fileData[0]);
+  //   formData.append("file-to-save", fileData[0]);
+  //   console.log("Filedata[0]", fileData[0]);
   
-    try {
-      const options = {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      };
+  //   try {
+  //     const options = {
+  //       method: "POST",
+  //       body: formData,
+  //       credentials: "include",
+  //     };
   
-      const promise = await fetch(`${SERVER}/testFileConversion`, options);
-      const response = await promise.json();
+  //     const promise = await fetch(`${SERVER}/testFileConversion`, options);
+  //     const response = await promise.json();
   
-      console.log("Response from testFileConversion:", response);
-    } catch (error) {
-      console.log("Error in testFileConversion:", error);
-    }
+  //     console.log("Response from testFileConversion:", response);
+  //   } catch (error) {
+  //     console.log("Error in testFileConversion:", error);
+  //   }
 
-  }
+  // }
 
 
     // if image has been uploaded and we contain it's data, we need to first check if they have a category selected, then
@@ -100,10 +102,94 @@ export default function SelectCategoryDropDown({ uploadedImage, fileData }) {
       const response = await promise.json();
   
       console.log("Response from uploadFile:", response);
+      setImageURL(response.url)
     } catch (error) {
       console.log("Error in getting file data:", error);
     }
   }
+
+  async function getUserID() {
+    try {
+      let options = {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      };
+      let promise = await fetch(`${SERVER}/getData`, options);
+      let response = await promise.json();
+
+      const userEmail = response.data.userinfo.email;
+
+
+      options = {
+        method: 'POST',
+        body: JSON.stringify({
+          user_email: userEmail,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        }
+      }
+
+      promise = await fetch(`${SERVER}/getUserID`, options)
+      response = await promise.json()
+
+      setUserID(response.user_id)
+    } catch (error) {
+      console.log("Error in getUserID", error)
+    }
+  }
+
+  async function saveImageToDB() {
+    try {
+      console.log("User id is:", userID)
+      console.log("category is:", categoryName[0])
+      console.log("image url is:", imageURL)
+
+      const options = {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userID,
+          image_category: categoryName[0],
+          image_url: imageURL,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }
+
+      const promise = await fetch(`${SERVER}/saveImageToSQL`, options)
+      const response = await promise.json()
+
+      console.log("Response from saveImageToDB:", response)
+    } catch (error) {
+      console.log("Error in saveImageToDB:", error)
+    }
+  }
+
+  useEffect(() => {
+    if (userID != -1) {
+      console.log("IN PRIMARY USE EFFECT")
+      saveImageToDB()
+      
+      setUserID(-1)
+      setImageURL('')
+    }
+  }, [userID])
+
+  useEffect(() => {
+    if (imageURL != '') {
+      console.log("IMAGE URL IS:", imageURL)
+      getUserID()
+    }
+  }, [imageURL])
+
+  // Once save is pressed, we upload our file data to our database, which returns an image url
+  // this then sets the iamge url, which triggers the useEffect which calls getUserID
+  // this then sets the user id which triggers the useEffect that finally saves our image to our database
+  // then we rest our userID and imageURL values for the next time we upload an image
 
   return (
     <div className='dropdown-container'>
@@ -142,24 +228,6 @@ export default function SelectCategoryDropDown({ uploadedImage, fileData }) {
         onClick={handleSave}
       >
         Save Image
-      </Button>
-
-
-      <Button
-        component="label"
-        role={undefined}
-        variant="contained"
-        tabIndex={-1}
-        sx={{
-          width: "50%",
-          height: "100%",
-          backgroundColor: "#EBE5C2",
-          color: "#504B38",
-          marginTop: '5%'
-        }}
-        onClick={testDataConversion}
-      >
-        Test Data Conversion
       </Button>
     </div>
   );

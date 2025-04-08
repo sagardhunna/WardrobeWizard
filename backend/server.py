@@ -133,7 +133,57 @@ def viewUsers():
     except Exception as e:
         return jsonify({
             "Error": str(e)
-        })        
+        }), 500
+        
+        
+# when calling this api, we will pass the user_id, image_category, and image_url        
+@app.route("/saveImageToSQL", methods=["POST"])
+def saveImageToSQL():
+    data = request.get_json()
+    try:
+        image_category = data.get('image_category')
+        user_id = data.get('user_id')
+        image_url = data.get('image_url')
+            
+        sql_query = 'INSERT INTO images (image_category, user_id, image_url) VALUES (%s, %s, %s);'
+        cursor = db.cursor()
+        
+        cursor.execute(sql_query, (image_category, user_id, image_url))
+        
+        db.commit()
+        
+        return jsonify({
+            'message': 'Successfully inserted image into database'
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "Error": str(e)
+        }), 500        
+        
+        
+@app.route("/getUserID", methods=["POST"])
+def getUserID():
+    data = request.get_json()
+    try:
+        user_email = data.get('user_email')
+        
+        sql_query = "SELECT user_id from users WHERE email = (%s);"
+        
+        cursor = db.cursor()
+        
+        cursor.execute(sql_query, (user_email,))
+        
+        result = cursor.fetchone()
+        
+        return jsonify({
+            "user_id": result[0]
+        }), 200
+    
+    except Exception as e:
+        return jsonify({
+            'Error': str(e)
+        }), 500
+
         
 @app.route("/viewImages", methods=["GET"])
 def viewImages():

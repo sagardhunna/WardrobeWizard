@@ -116,7 +116,7 @@ function AddToInventory() {
               variant="filled"
               severity="success"
             >
-              Successfully uploaded image!
+              Successfully displayed image!
             </Alert>
           </Collapse>
 
