@@ -31,33 +31,47 @@ function AddToInventory() {
 
   const SERVER = import.meta.env.VITE_SERVER;
 
+  const allowedFileTypes = ["png", "jpeg", "jpg", "heic"]
+
+  const checkFileType = (fileData) => {
+    let fileType = fileData[0].type
+    fileType = fileType.split("/")[1]
+    if (allowedFileTypes.includes(fileType)) {
+      return true
+    } else {
+      return false
+    }
+  }
+
   const handleFileSubmission = async (fileData) => {
-    setFileData(fileData)
-    setOpen(false);
-    console.log("FileData:", fileData);
-    console.log("FileData[0].name:", fileData[0].name);
-    console.log("FileData[0].size (in bytes):", fileData[0].size);
+    const safeFileToUpload = checkFileType(fileData)
+    if (safeFileToUpload) {
+      setFileData(fileData)
+      setOpen(false);
 
-    const file = fileData[0];
+      const file = fileData[0];
 
-    if (file) {
-      if (file.type === "image/heic") {
-        try {
-          const convertedBlob = await heic2any({
-            blob: file,
-            toType: "image/jpeg",
-          });
-          console.log("ConvertedBlob:", convertedBlob);
-          const url = URL.createObjectURL(convertedBlob);
-          console.log("url:", url);
-          setPreviewURL(url); // use this in <img src={previewUrl} />
-        } catch (error) {
-          console.log("Error in conversion of heic:", error);
+      if (file) {
+        if (file.type === "image/heic") {
+          try {
+            const convertedBlob = await heic2any({
+              blob: file,
+              toType: "image/jpeg",
+            });
+            console.log("ConvertedBlob:", convertedBlob);
+            const url = URL.createObjectURL(convertedBlob);
+            console.log("url:", url);
+            setPreviewURL(url); // use this in <img src={previewUrl} />
+          } catch (error) {
+            console.log("Error in conversion of heic:", error);
+          }
+        } else {
+          const url = URL.createObjectURL(fileData[0]);
+          setPreviewURL(url);
         }
-      } else {
-        const url = URL.createObjectURL(fileData[0]);
-        setPreviewURL(url);
       }
+    } else {
+      console.log("CANNOT UPLOAD FILE, IT IS AN INVALID FILE TYPE")
     }
   };
 
