@@ -1,16 +1,34 @@
-.inventory-container {
+.main-container {
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 80vh;
-    background-color: #EBE5C2;
-    margin-top: 1%;
+    min-height: 85vh;
+    height: auto;
+    background-color: #B9B28A;
     border: solid black;
+    align-items: center;
+    margin-top: 1%;
 }
 
-.images-container {
+.inventory-cards {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    justify-content: space-around;
+}
+
+.tops, .bottoms, .shoes, .hats {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    width: 25%; 
+    height: auto;
+}
+
+h1 {
+    background-color: #EBE5C2;
+    padding: 1%;
+    margin: 1%;
+    border: solid black;
 }

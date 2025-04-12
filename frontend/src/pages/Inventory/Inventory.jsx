@@ -1,11 +1,16 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import InventoryDisplay from "../../components/InventoryDisplay/InventoryDisplay";
 import "./inventory.css";
+import { adaptV4Theme, Button } from "@mui/material";
+import InventoryDisplay from "../../components/InventoryDisplay/InventoryDisplay";
 
 function Inventory() {
-  const [inventory, setInventory] = useState([]);
+  const [inventory, setInventory] = useState(undefined);
   const [userID, setUserID] = useState(-1);
+  const [tops, setTops] = useState([]);
+  const [bottoms, setBottoms] = useState([]);
+  const [shoes, setShoes] = useState([]);
+  const [hats, setHats] = useState([]);
 
   const SERVER = import.meta.env.VITE_SERVER;
 
@@ -24,24 +29,23 @@ function Inventory() {
       const userEmail = response.data.userinfo.email;
 
       options = {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({
           user_email: userEmail,
         }),
         headers: {
           "Content-Type": "application/json",
-        }
-      }
+        },
+      };
 
-      promise = await fetch(`${SERVER}/getUserID`, options)
-      response = await promise.json()
+      promise = await fetch(`${SERVER}/getUserID`, options);
+      response = await promise.json();
 
-      setUserID(response.user_id)
+      setUserID(response.user_id);
     } catch (error) {
-      console.log("Error in getUserID", error)
+      console.log("Error in getUserID", error);
     }
   }
-
 
   async function getInventory() {
     try {
@@ -51,7 +55,7 @@ function Inventory() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          user_id: userID
+          user_id: userID,
         }),
       };
 
@@ -64,31 +68,88 @@ function Inventory() {
     }
   }
 
+  function organizeData(data) {
+    if (!data) {
+      console.log("No images in inventory for this user...");
+    } else {
+      console.log("Data:", data);
+      let tempTops = [];
+      let tempBottoms = [];
+      let tempShoes = [];
+      let tempHats = [];
+
+      data.forEach((element) => {
+        if (element.image_category == "Top") {
+          tempTops.push(element);
+        } else if (element.image_category == "Bottom") {
+          tempBottoms.push(element);
+        } else if (element.image_category == "Shoes") {
+          tempShoes.push(element);
+        } else if (element.image_category == "Hat") {
+          tempHats.push(element);
+        } else {
+          console.log("element DNE");
+        }
+      });
+
+      setTops(tempTops);
+      setBottoms(tempBottoms);
+      setShoes(tempShoes);
+      setHats(tempHats);
+    }
+  }
+
   useEffect(() => {
     getUserID();
   }, []);
 
   useEffect(() => {
     if (userID != -1) {
-      getInventory()
-      setUserID(-1)
+      getInventory();
+      setUserID(-1);
     }
-  }, [userID])
+  }, [userID]);
+
+  useEffect(() => {
+    console.log("organizing data but we dont have invenotry");
+    if (inventory != undefined) {
+      console.log("organizing data but we have invenotry");
+      console.log("Inventory:", inventory)
+      organizeData(inventory);
+    }
+  }, [inventory]);
 
   return (
-    <><h1
-      style={{
-        backgroundColor: "#EBE5C2",
-        padding: "0.5%",
-        border: "solid",
-      }}
-    >
-      Here is your inventory
-    </h1><div className="inventory-container">
-        <div className="images-container">
-          <InventoryDisplay inventoryImages={inventory} />
+    <div className="main-container">
+      <h1
+        style={{
+          backgroundColor: "#EBE5C2",
+          padding: "1%",
+          border: "solid black",
+        }}
+      >
+        Here is your inventory
+      </h1>
+
+      <div className="inventory-cards">
+        <div className="tops">
+          <h1>Tops</h1>
+          {tops && <InventoryDisplay inventoryImages={tops} />}
         </div>
-      </div></>
+        <div className="bottoms">
+          <h1>Bottoms</h1>
+          {bottoms && <InventoryDisplay inventoryImages={bottoms} />}
+        </div>
+        <div className="shoes">
+          <h1>Shoes</h1>
+          {shoes && <InventoryDisplay inventoryImages={shoes} />}
+        </div>
+        <div className="hats">
+          <h1>Hats</h1>
+          {hats && <InventoryDisplay inventoryImages={hats} />}
+        </div>
+      </div>
+    </div>
   );
 }
 

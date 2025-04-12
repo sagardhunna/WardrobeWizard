@@ -24,7 +24,7 @@ const categories = [
     'Top',
     'Bottom',
     'Shoes',
-    'Hats'
+    'Hat'
 ];
 
 

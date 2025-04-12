@@ -227,6 +227,11 @@ def getImages():
         cursor.execute(sql_query, (user_id,))
         results = cursor.fetchall()
 
+        if results is None:
+            return jsonify({
+                "ImageURL": "N/A"
+            }), 500
+
         data = []
         
         for result in results:            
@@ -242,12 +247,7 @@ def getImages():
             
             data.append(information)
         
-        if result is None:
-            return jsonify({
-                "ImageURL": "N/A"
-            }), 500
-        else:
-            return data, 200
+        return data, 200
     except Exception as e:
         return jsonify({
             "Error": str(e)
