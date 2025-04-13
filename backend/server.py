@@ -30,12 +30,14 @@ WARDROBE_MYSQL_USER= os.getenv("WARDROBE_MYSQL_USER")
 app.secret_key = WARDROBE_SECRET_KEY
 CORS(app, origins=[WARDROBE_SERVER], supports_credentials=True)
 
-db = mysql.connector.connect(
-    host=WARDROBE_MYSQL_HOST,
-    user=WARDROBE_MYSQL_USER,
-    password=WARDROBE_MYSQL_PASSWORD,
-    database=WARDROBE_MYSQL_DATABASE
-)
+# def get_db_connection():
+#     return mysql.connector.connect(
+#         host=WARDROBE_MYSQL_HOST,
+#         user=WARDROBE_MYSQL_USER,
+#         password=WARDROBE_MYSQL_PASSWORD,
+#         database=WARDROBE_MYSQL_DATABASE,
+#         connection_timeout=10
+#     )
 
 
 @app.route("/")
@@ -58,7 +60,7 @@ google = oauth.register(
     server_metadata_url= 'https://accounts.google.com/.well-known/openid-configuration'
 )
 
-mysql_db_bp = create_mysql_db_blueprint(db)
+mysql_db_bp = create_mysql_db_blueprint()
 app.register_blueprint(mysql_db_bp)
     
 auth_bp = create_auth_blueprint(google)

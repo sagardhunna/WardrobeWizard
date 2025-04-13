@@ -1,8 +1,27 @@
 from flask import jsonify, Blueprint, request
 import json
+import os
+from dotenv import load_dotenv
+import mysql.connector
 
 
-def create_mysql_db_blueprint(db):
+def create_mysql_db_blueprint():
+    load_dotenv()
+    
+    WARDROBE_MYSQL_HOST= os.getenv("WARDROBE_MYSQL_HOST")
+    WARDROBE_MYSQL_USER= os.getenv("WARDROBE_MYSQL_USER")
+    WARDROBE_MYSQL_PASSWORD = os.getenv("WARDROBE_MYSQL_PASSWORD")
+    WARDROBE_MYSQL_DATABASE = os.getenv("WARDROBE_MYSQL_DATABASE")
+    
+    def get_db_connection():
+        return mysql.connector.connect(
+            host=WARDROBE_MYSQL_HOST,
+            user=WARDROBE_MYSQL_USER,
+            password=WARDROBE_MYSQL_PASSWORD,
+            database=WARDROBE_MYSQL_DATABASE,
+            connection_timeout=10
+        )
+    
     
     mysql_db = Blueprint('mysql_db', __name__)
     
@@ -15,6 +34,8 @@ def create_mysql_db_blueprint(db):
             print(f"request.get_json(): {request.get_json()}")
             sql_query = 'INSERT INTO users (email) VALUES (%s);'
             
+            db = get_db_connection
+            
             cursor = db.cursor() # allows us to excute MySQL queries
             cursor.execute(sql_query, (email))
             db.commit()
@@ -26,6 +47,9 @@ def create_mysql_db_blueprint(db):
             return jsonify({
                 "Error": str(e)
             }), 500
+        finally:
+            cursor.close()
+            db.close()
             
     @mysql_db.route("/hasAccount", methods=["POST"])
     def checkHasAccount():
@@ -33,6 +57,8 @@ def create_mysql_db_blueprint(db):
         try:
             sql_query = 'SELECT email FROM users WHERE email = (%s);'
             email = data.get('email')
+            
+            db = get_db_connection()
             
             cursor = db.cursor() # allows us to excute MySQL queries
             cursor.execute(sql_query, (email,))
@@ -51,12 +77,17 @@ def create_mysql_db_blueprint(db):
             return jsonify({
                 "Error": str(e)
             }), 500
+        finally:
+            cursor.close()
+            db.close()
             
             
     @mysql_db.route("/viewUsers", methods=["GET"])
     def viewUsers():
         try:
             sql_query = 'SELECT * FROM users;'
+            
+            db = get_db_connection()
             cursor = db.cursor()
             
             cursor.execute(sql_query)
@@ -80,6 +111,9 @@ def create_mysql_db_blueprint(db):
             return jsonify({
                 "Error": str(e)
             }), 500
+        finally:
+            cursor.close()
+            db.close()
             
             
     # when calling this api, we will pass the user_id, image_category, and image_url        
@@ -92,6 +126,9 @@ def create_mysql_db_blueprint(db):
             image_url = data.get('image_url')
                 
             sql_query = 'INSERT INTO images (image_category, user_id, image_url) VALUES (%s, %s, %s);'
+            
+            db = get_db_connection()
+            
             cursor = db.cursor()
             
             cursor.execute(sql_query, (image_category, user_id, image_url))
@@ -105,6 +142,9 @@ def create_mysql_db_blueprint(db):
             return jsonify({
                 "Error": str(e)
             }), 500        
+        finally:
+            cursor.close()
+            db.close()
             
             
     @mysql_db.route("/getUserID", methods=["POST"])
@@ -114,6 +154,8 @@ def create_mysql_db_blueprint(db):
             user_email = data.get('user_email')
             
             sql_query = "SELECT user_id from users WHERE email = (%s);"
+            
+            db = get_db_connection()
             
             cursor = db.cursor()
             
@@ -129,12 +171,17 @@ def create_mysql_db_blueprint(db):
             return jsonify({
                 'Error': str(e)
             }), 500
-
+        finally:
+            cursor.close()
+            db.close()
             
     @mysql_db.route("/viewImages", methods=["GET"])
     def viewImages():
         try:
             sql_query = 'SELECT * FROM images;'
+            
+            
+            db = get_db_connection()
             cursor = db.cursor()
             
             cursor.execute(sql_query)
@@ -160,7 +207,11 @@ def create_mysql_db_blueprint(db):
             return jsonify({
                 "Error": str(e)
             })    
+        finally:
+            cursor.close()
+            db.close()
             
+                        
     # retrieve image from SQL SERVER
     @mysql_db.route("/getImages", methods=["POST"])
     def getImages():
@@ -168,6 +219,9 @@ def create_mysql_db_blueprint(db):
         try:
             user_id = data.get("user_id")
             sql_query = 'SELECT user_id, image_url, image_category FROM images WHERE user_id = (%s);'
+            
+            
+            db = get_db_connection()
             
             cursor = db.cursor()
             cursor.execute(sql_query, (user_id,))
@@ -198,7 +252,11 @@ def create_mysql_db_blueprint(db):
             return jsonify({
                 "Error": str(e)
             }), 500
+        finally:
+            cursor.close()
+            db.close()
             
+                        
             
     @mysql_db.route("/saveOutfit", methods=["POST"])
     def saveOutfit():
@@ -210,6 +268,8 @@ def create_mysql_db_blueprint(db):
             outfit_json = json.dumps(outfit_arr) # converts to a json string so that mysql can read it
             
             sql_query = "INSERT INTO outfits (user_id, outfit) VALUES (%s, %s);"
+            
+            db = get_db_connection()
             
             cursor = db.cursor()
             cursor.execute(sql_query, (user_id, outfit_json))
@@ -224,6 +284,10 @@ def create_mysql_db_blueprint(db):
             return jsonify({
                 "Error": str(e)
             }), 500
+        finally:
+            cursor.close()
+            db.close()
+            
             
     @mysql_db.route("/getOutfits", methods=["POST"])
     def getOutfits():
@@ -233,6 +297,8 @@ def create_mysql_db_blueprint(db):
             
             sql_query = "SELECT outfit FROM outfits WHERE user_id = (%s);"
             
+            
+            db = get_db_connection()
             cursor = db.cursor()
             cursor.execute(sql_query, (user_id,))
             results = cursor.fetchall()
@@ -256,5 +322,9 @@ def create_mysql_db_blueprint(db):
             return jsonify({
                 "Error": str(e)
             }), 500
+        finally:
+            cursor.close()
+            db.close()
             
+                        
     return mysql_db
