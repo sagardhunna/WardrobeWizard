@@ -92,12 +92,34 @@ const CreateOutfit = () => {
   useEffect(() => {
     if (userID != -1) {
       getInventory();
-      setUserID(-1);
     }
   }, [userID]);
 
+  
+  async function saveOutfit() {
+    console.log("User id is:", userID)
+    console.log("outfit:", outfit)
+    try {
+      const options = {
+        method: "POST", 
+        body: JSON.stringify({
+          user_id: userID,
+          complete_outfit: outfit,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }
 
-  const outfitIsComplete = hat && top && bottom && shoes;
+      const promise = await fetch(`${SERVER}/saveOutfit`, options)
+      const response = await promise.json()
+
+      console.log("Response from saveOutfit:", response)
+    } catch (error) {
+      console.log("Error:", error)
+    }
+
+  }
 
   return (
     <div className="create-outfit-container">
@@ -108,9 +130,7 @@ const CreateOutfit = () => {
               <img src={item} alt={`slot-${index}`} draggable="false" />
             </div>
           ))}
-          <button className="save-button" onClick={() => {
-            console.log("Outfit:", outfit)
-          }} disabled={!outfitIsComplete}>
+          <button className="save-button" onClick={saveOutfit} disabled={!(hat && top && bottom && shoes)}>
             Save Outfit
           </button>
         </div>

@@ -113,3 +113,9 @@
   justify-content: flex-end;
   padding: 1rem;
 }
+
+.save-button:disabled {
+  background-color: #b9b28a;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
