@@ -6,11 +6,7 @@ from dotenv import load_dotenv
 from authlib.integrations.flask_client import OAuth
 from auth import create_auth_blueprint
 from aws import create_aws_blueprint
-from PIL import Image
-import pillow_heif
-import io
-from werkzeug.datastructures import FileStorage
-import uuid
+from mysql_db import create_mysql_db_blueprint
 
 app = Flask(__name__)
 
@@ -60,220 +56,223 @@ google = oauth.register(
 )
 
 
-@app.route("/createUser", methods=["POST"])
-def createUser():
-    data = request.get_json()
-    try:
-        email = [data.get('email')]
-        print(f'email is: {email}')
-        print(f"request.get_json(): {request.get_json()}")
-        sql_query = 'INSERT INTO users (email) VALUES (%s);'
+# @app.route("/createUser", methods=["POST"])
+# def createUser():
+#     data = request.get_json()
+#     try:
+#         email = [data.get('email')]
+#         print(f'email is: {email}')
+#         print(f"request.get_json(): {request.get_json()}")
+#         sql_query = 'INSERT INTO users (email) VALUES (%s);'
         
-        cursor = db.cursor() # allows us to excute MySQL queries
-        cursor.execute(sql_query, (email))
-        db.commit()
+#         cursor = db.cursor() # allows us to excute MySQL queries
+#         cursor.execute(sql_query, (email))
+#         db.commit()
         
-        return jsonify({
-            'message': 'Successfully created user!'
-        }), 200
-    except Exception as e:
-        return jsonify({
-            "Error": str(e)
-        }), 500
+#         return jsonify({
+#             'message': 'Successfully created user!'
+#         }), 200
+#     except Exception as e:
+#         return jsonify({
+#             "Error": str(e)
+#         }), 500
         
-@app.route("/hasAccount", methods=["POST"])
-def checkHasAccount():
-    data = request.get_json()
-    try:
-        sql_query = 'SELECT email FROM users WHERE email = (%s);'
-        email = data.get('email')
+# @app.route("/hasAccount", methods=["POST"])
+# def checkHasAccount():
+#     data = request.get_json()
+#     try:
+#         sql_query = 'SELECT email FROM users WHERE email = (%s);'
+#         email = data.get('email')
         
-        cursor = db.cursor() # allows us to excute MySQL queries
-        cursor.execute(sql_query, (email,))
-        result = cursor.fetchone()
+#         cursor = db.cursor() # allows us to excute MySQL queries
+#         cursor.execute(sql_query, (email,))
+#         result = cursor.fetchone()
 
-        if result is None:
-            return jsonify({
-                'hasAccount': False
-            })
-        else:
-            return jsonify({
-                'hasAccount': True
-            })
+#         if result is None:
+#             return jsonify({
+#                 'hasAccount': False
+#             })
+#         else:
+#             return jsonify({
+#                 'hasAccount': True
+#             })
         
-    except Exception as e:
-        return jsonify({
-            "Error": str(e)
-        }), 500
+#     except Exception as e:
+#         return jsonify({
+#             "Error": str(e)
+#         }), 500
         
         
-@app.route("/viewUsers", methods=["GET"])
-def viewUsers():
-    try:
-        sql_query = 'SELECT * FROM users;'
-        cursor = db.cursor()
+# @app.route("/viewUsers", methods=["GET"])
+# def viewUsers():
+#     try:
+#         sql_query = 'SELECT * FROM users;'
+#         cursor = db.cursor()
         
-        cursor.execute(sql_query)
-        results = cursor.fetchall()
+#         cursor.execute(sql_query)
+#         results = cursor.fetchall()
         
-        data = []
+#         data = []
         
-        for result in results: 
-            user_id = result[0]
-            user_email = result[1]           
+#         for result in results: 
+#             user_id = result[0]
+#             user_email = result[1]           
                         
-            information = {
-                'user_id': user_id,
-                'user_email': user_email
-            }
+#             information = {
+#                 'user_id': user_id,
+#                 'user_email': user_email
+#             }
             
-            data.append(information)
+#             data.append(information)
         
-        return data, 200
-    except Exception as e:
-        return jsonify({
-            "Error": str(e)
-        }), 500
+#         return data, 200
+#     except Exception as e:
+#         return jsonify({
+#             "Error": str(e)
+#         }), 500
         
         
-# when calling this api, we will pass the user_id, image_category, and image_url        
-@app.route("/saveImageToSQL", methods=["POST"])
-def saveImageToSQL():
-    data = request.get_json()
-    try:
-        image_category = data.get('image_category')
-        user_id = data.get('user_id')
-        image_url = data.get('image_url')
+# # when calling this api, we will pass the user_id, image_category, and image_url        
+# @app.route("/saveImageToSQL", methods=["POST"])
+# def saveImageToSQL():
+#     data = request.get_json()
+#     try:
+#         image_category = data.get('image_category')
+#         user_id = data.get('user_id')
+#         image_url = data.get('image_url')
             
-        sql_query = 'INSERT INTO images (image_category, user_id, image_url) VALUES (%s, %s, %s);'
-        cursor = db.cursor()
+#         sql_query = 'INSERT INTO images (image_category, user_id, image_url) VALUES (%s, %s, %s);'
+#         cursor = db.cursor()
         
-        cursor.execute(sql_query, (image_category, user_id, image_url))
+#         cursor.execute(sql_query, (image_category, user_id, image_url))
         
-        db.commit()
+#         db.commit()
         
-        return jsonify({
-            'message': 'Successfully inserted image into database'
-        }), 200
-    except Exception as e:
-        return jsonify({
-            "Error": str(e)
-        }), 500        
+#         return jsonify({
+#             'message': 'Successfully inserted image into database'
+#         }), 200
+#     except Exception as e:
+#         return jsonify({
+#             "Error": str(e)
+#         }), 500        
         
         
-@app.route("/getUserID", methods=["POST"])
-def getUserID():
-    data = request.get_json()
-    try:
-        user_email = data.get('user_email')
+# @app.route("/getUserID", methods=["POST"])
+# def getUserID():
+#     data = request.get_json()
+#     try:
+#         user_email = data.get('user_email')
         
-        sql_query = "SELECT user_id from users WHERE email = (%s);"
+#         sql_query = "SELECT user_id from users WHERE email = (%s);"
         
-        cursor = db.cursor()
+#         cursor = db.cursor()
         
-        cursor.execute(sql_query, (user_email,))
+#         cursor.execute(sql_query, (user_email,))
         
-        result = cursor.fetchone()
+#         result = cursor.fetchone()
         
-        return jsonify({
-            "user_id": result[0]
-        }), 200
+#         return jsonify({
+#             "user_id": result[0]
+#         }), 200
     
-    except Exception as e:
-        return jsonify({
-            'Error': str(e)
-        }), 500
+#     except Exception as e:
+#         return jsonify({
+#             'Error': str(e)
+#         }), 500
 
         
-@app.route("/viewImages", methods=["GET"])
-def viewImages():
-    try:
-        sql_query = 'SELECT * FROM images;'
-        cursor = db.cursor()
+# @app.route("/viewImages", methods=["GET"])
+# def viewImages():
+#     try:
+#         sql_query = 'SELECT * FROM images;'
+#         cursor = db.cursor()
         
-        cursor.execute(sql_query)
-        results = cursor.fetchall()
+#         cursor.execute(sql_query)
+#         results = cursor.fetchall()
         
-        data = []
+#         data = []
         
-        for result in results: 
-            image_category = result[1]           
-            user_id = result[2]
-            image_url = result[3]
+#         for result in results: 
+#             image_category = result[1]           
+#             user_id = result[2]
+#             image_url = result[3]
             
-            information = {
-                'image_url': image_url,
-                'image_category': image_category,
-                'user_id': user_id,
-            }
+#             information = {
+#                 'image_url': image_url,
+#                 'image_category': image_category,
+#                 'user_id': user_id,
+#             }
             
-            data.append(information)
+#             data.append(information)
         
-        return data, 200
-    except Exception as e:
-        return jsonify({
-            "Error": str(e)
-        })    
+#         return data, 200
+#     except Exception as e:
+#         return jsonify({
+#             "Error": str(e)
+#         })    
         
-# retrieve image from SQL SERVER
-@app.route("/getImages", methods=["POST"])
-def getImages():
-    data = request.get_json()
-    try:
-        user_id = data.get("user_id")
-        sql_query = 'SELECT user_id, image_url, image_category FROM images WHERE user_id = (%s);'
+# # retrieve image from SQL SERVER
+# @app.route("/getImages", methods=["POST"])
+# def getImages():
+#     data = request.get_json()
+#     try:
+#         user_id = data.get("user_id")
+#         sql_query = 'SELECT user_id, image_url, image_category FROM images WHERE user_id = (%s);'
         
-        cursor = db.cursor()
-        cursor.execute(sql_query, (user_id,))
-        results = cursor.fetchall()
+#         cursor = db.cursor()
+#         cursor.execute(sql_query, (user_id,))
+#         results = cursor.fetchall()
 
-        if results is None:
-            return jsonify({
-                "ImageURL": "N/A"
-            }), 500
+#         if results is None:
+#             return jsonify({
+#                 "ImageURL": "N/A"
+#             }), 500
 
-        data = []
+#         data = []
         
-        for result in results:            
-            user_id = result[0]
-            image_url = result[1]
-            image_category = result[2]
+#         for result in results:            
+#             user_id = result[0]
+#             image_url = result[1]
+#             image_category = result[2]
             
-            information = {
-                'image_url': image_url,
-                'image_category': image_category,
-                'user_id': user_id,
-            }
+#             information = {
+#                 'image_url': image_url,
+#                 'image_category': image_category,
+#                 'user_id': user_id,
+#             }
             
-            data.append(information)
+#             data.append(information)
         
-        return data, 200
-    except Exception as e:
-        return jsonify({
-            "Error": str(e)
-        }), 500
-        
-        
-ALLOWED_EXTENSIONS = {'png', 'jpeg', 'jpg'}
-        
-# helper function to make sure file is correct filetype
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS        
+#         return data, 200
+#     except Exception as e:
+#         return jsonify({
+#             "Error": str(e)
+#         }), 500
         
         
-@app.route("/testFileConversion", methods=["POST"])
-def convertFile():
-    try:
-        uploaded_file = request.files["file-to-save"]    
+# ALLOWED_EXTENSIONS = {'png', 'jpeg', 'jpg'}
         
-        return jsonify({
-            "uploaded_file": str(uploaded_file.filename.rsplit('.', 1)[1].lower())
-        }), 200   
-    except Exception as e:
-        return jsonify({
-            "Error in convert file": str(e)
-        }), 500
+# # helper function to make sure file is correct filetype
+# def allowed_file(filename):
+#     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS        
         
+        
+# @app.route("/testFileConversion", methods=["POST"])
+# def convertFile():
+#     try:
+#         uploaded_file = request.files["file-to-save"]    
+        
+#         return jsonify({
+#             "uploaded_file": str(uploaded_file.filename.rsplit('.', 1)[1].lower())
+#         }), 200   
+#     except Exception as e:
+#         return jsonify({
+#             "Error in convert file": str(e)
+#         }), 500
+
+
+mysql_db_bp = create_mysql_db_blueprint(db)
+app.register_blueprint(mysql_db_bp)
     
 auth_bp = create_auth_blueprint(google)
 app.register_blueprint(auth_bp)

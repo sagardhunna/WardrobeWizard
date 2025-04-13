@@ -1,0 +1,1 @@
+from .routes import create_mysql_db_blueprint
