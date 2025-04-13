@@ -19,12 +19,12 @@ def create_aws_blueprint():
     ALLOWED_EXTENSIONS = {'png', 'jpeg', 'jpg'}
 
     AWS_BUCKET_NAME = os.getenv("AWS_BUCKET_NAME")
-    AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY")
+    WARDROBE_AWS_ACCESS_KEY = os.getenv("WARDROBE_AWS_ACCESS_KEY")
     AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
     s3 = boto3.client(
         "s3",
-        aws_access_key_id=AWS_ACCESS_KEY,
+        aws_access_key_id=WARDROBE_AWS_ACCESS_KEY,
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY
     )
 
