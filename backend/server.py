@@ -17,20 +17,20 @@ app.config.update(
 
 load_dotenv()
 
-MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
+WARDROBE_MYSQL_PASSWORD = os.getenv("WARDROBE_MYSQL_PASSWORD")
 MYSQL_DATABASE = os.getenv("MYSQL_DATABASE")
-CLIENT_ID = os.getenv("CLIENT_ID")
-CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-SECRET_KEY = os.getenv("SECRET_KEY")
-SERVER = os.getenv("SERVER")
+WARDROBE_CLIENT_ID = os.getenv("WARDROBE_CLIENT_ID")
+WARDROBE_CLIENT_SECRET = os.getenv("WARDROBE_CLIENT_SECRET")
+WARDROBE_SECRET_KEY = os.getenv("WARDROBE_SECRET_KEY")
+WARDROBE_SERVER = os.getenv("WARDROBE_SERVER")
 
-app.secret_key = SECRET_KEY
-CORS(app, origins=[SERVER], supports_credentials=True)
+app.WARDROBE_SECRET_KEY = WARDROBE_SECRET_KEY
+CORS(app, origins=[WARDROBE_SERVER], supports_credentials=True)
 
 db = mysql.connector.connect(
     host='localhost',
     user='root',
-    password=MYSQL_PASSWORD,
+    password=WARDROBE_MYSQL_PASSWORD,
     database=MYSQL_DATABASE
 )
 
@@ -44,8 +44,8 @@ oauth = OAuth(app)
 
 google = oauth.register(
     name='google',
-    client_id=CLIENT_ID,
-    client_secret=CLIENT_SECRET,
+    WARDROBE_CLIENT_ID=WARDROBE_CLIENT_ID,
+    WARDROBE_CLIENT_SECRET=WARDROBE_CLIENT_SECRET,
     access_token_url= "https://www.googleapis.com/oauth2/v4/token",
     access_token_params=None,
     authorize_url= "https://accounts.google.com/o/oauth2/v2/auth",

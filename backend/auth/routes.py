@@ -7,7 +7,7 @@ load_dotenv()
 
 
 def create_auth_blueprint(google):
-    SERVER = os.getenv("SERVER")
+    WARDROBE_SERVER = os.getenv("WARDROBE_SERVER")
         
     auth_bp = Blueprint('auth', __name__)
     
@@ -44,9 +44,9 @@ def create_auth_blueprint(google):
         if 'username' in session:
             is_logged_in = True
             print("is_logged_in @ routing", is_logged_in)
-            return redirect(f'{SERVER}/Home')
+            return redirect(f'{WARDROBE_SERVER}/Home')
         else:
-            return redirect(f'{SERVER}/')
+            return redirect(f'{WARDROBE_SERVER}/')
         
     @auth_bp.route("/getData", methods=['GET'])
     def getData():
