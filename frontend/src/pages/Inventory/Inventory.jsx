@@ -2,8 +2,12 @@ import React, { useState, useEffect } from "react";
 import "./inventory.css";
 import InventoryDisplay from "../../components/InventoryDisplay/InventoryDisplay";
 import { Button } from "@mui/material";
+import useAuthRedirect from "../../hooks/useAuthRedirect";
+
 
 function Inventory() {
+  useAuthRedirect();
+
   const [inventory, setInventory] = useState(undefined);
   const [userID, setUserID] = useState(-1);
   const [tops, setTops] = useState([]);

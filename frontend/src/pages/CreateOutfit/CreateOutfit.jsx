@@ -1,8 +1,11 @@
 import React from "react";
 import "./createOutfit.css";
 import { useState, useEffect } from "react";
+import useAuthRedirect from "../../hooks/useAuthRedirect";
 
 const CreateOutfit = () => {
+  useAuthRedirect();
+
   const [hat, setHat] = useState(undefined);
   const [top, setTop] = useState(undefined);
   const [bottom, setBottom] = useState(undefined);

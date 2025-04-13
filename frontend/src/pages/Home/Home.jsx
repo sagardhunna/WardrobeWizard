@@ -2,9 +2,12 @@ import React, { use } from "react";
 import Tutorial from "../../components/Tutorial/Tutorial";
 import "./home.css";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import useAuthRedirect from "../../hooks/useAuthRedirect";
+
 
 function Home() {
+  useAuthRedirect();
+
   const SERVER = import.meta.env.VITE_SERVER;
 
   const [userEmail, setUserEmail] = useState("UNDEFINED");

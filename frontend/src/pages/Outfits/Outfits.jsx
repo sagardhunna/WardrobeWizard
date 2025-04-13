@@ -1,8 +1,11 @@
 import React, { useEffect } from "react";
 import "./outfits.css";
 import { useState } from "react";
+import useAuthRedirect from "../../hooks/useAuthRedirect";
+
 
 function Outfits() {
+  useAuthRedirect();
   const [userID, setUserID] = useState(-1);
   const [outfits, setOutfits] = useState([]);
 

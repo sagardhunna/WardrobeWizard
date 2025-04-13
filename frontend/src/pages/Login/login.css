@@ -1,0 +1,31 @@
+.login-page {
+    height: 100vh;
+    background-color: #f8f3d9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .login-card {
+    background-color: #ebe5c2;
+    padding: 3rem 4rem;
+    border-radius: 16px;
+    border: 2px solid #504b38;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    max-width: 500px;
+    width: 90%;
+  }
+  
+  .login-title {
+    color: #504b38;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .login-subtext {
+    color: #504b38;
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+  
