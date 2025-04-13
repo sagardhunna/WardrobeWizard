@@ -3,9 +3,11 @@ import Button from "@mui/material/Button";
 
 function LoginPopover() {
 
+  const SERVER = import.meta.env.VITE_SERVER;
+
   async function login() {
     try {
-      window.location.href = "http://127.0.0.1:5000/login/google";
+      window.location.href = `${SERVER}/login/google`;
     } catch (error) {
       console.log({'Error:':error})
     }
